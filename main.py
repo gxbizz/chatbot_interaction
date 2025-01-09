@@ -4,48 +4,57 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 
-def comunicar_distribuidoras(numero, mensagem):
-    # Configurações do Chrome
-    options = Options()
-    # Adicionar argumento para usar perfil existente (opcional)
-    # options.add_argument("user-data-dir=/caminho/para/seu/perfil/do/chrome")
+options = Options()
+
+driver = webdriver.Chrome(options=options) # finalizar driver ao acabar
+driver.get("https://web.whatsapp.com")
+input("Escaneie o QR Code e pressione ENTER para continuar...")
+
+def entrar_na_conversa(contato):
+    search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
+    search_box.click()
+    search_box.send_keys(contato)
+    search_box.send_keys(Keys.RETURN)
+
+def mandar_mensagem(mensagem):
+    message_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="10"]')
+    message_box.click()
+    message_box.send_keys(mensagem)
+    message_box.send_keys(Keys.RETURN)
+
+def ultima_resposta(anten):
+    if(not anten): anten = 1
+    mensagens_recebidas = driver.find_elements(By.XPATH, '//div[contains(@class, "message-in")]//div[contains(@class, "copyable-text")]')
+    ultima_resposta = mensagens_recebidas[-anten].text if mensagens_recebidas else "Nenhuma resposta recebida."
+    return ultima_resposta
+
+def estrategia_teste(cpf):
+    entrar_na_conversa("energisa")
+    time.sleep(5)
+    mandar_mensagem("oi")
+    time.sleep(10)
+    mandar_mensagem("Não")
+    time.sleep(15)
+    mandar_mensagem("Faturas e Pagamentos")
+    time.sleep(15)
+    mandar_mensagem("Pagar Fatura")
+    time.sleep(15)
+    mandar_mensagem(cpf)
+    time.sleep(15)
+    mandar_mensagem("Continuar com CPF")
+    time.sleep(15)
+    mandar_mensagem("sim")
+    time.sleep(15)
+    print(ultima_resposta(4))
+    mandar_mensagem("Encerrar")
+    time.sleep(10)
+    mandar_mensagem("Não")
+    time.sleep(10)
+    mandar_mensagem("10")
+    time.sleep(5)
+    mandar_mensagem("encerrar")
+    time.sleep(5)
+    mandar_mensagem("sim")
     
-    driver = webdriver.Chrome(options=options)
-    driver.get("https://web.whatsapp.com")
 
-    # Pausa para aguardar o login manual
-    input("Escaneie o QR Code e pressione ENTER para continuar...")
-
-    try:
-        # Localiza o campo de busca
-        search_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
-        search_box.click()
-        search_box.send_keys(numero)
-        search_box.send_keys(Keys.RETURN)
-        time.sleep(5)
-
-        # Envia a mensagem
-        message_box = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="6"]')
-        message_box.click()
-        message_box.send_keys(mensagem)
-        message_box.send_keys(Keys.RETURN)
-        time.sleep(5)
-
-        # Captura as mensagens recebidas
-        mensagens_recebidas = driver.find_elements(By.XPATH, '//div[contains(@class, "message-in")]')
-        ultima_resposta = mensagens_recebidas[-1].text if mensagens_recebidas else "Nenhuma resposta recebida."
-        return ultima_resposta
-
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
-        return "Erro ao se comunicar com a distribuidora."
-
-    finally:
-        # Garante que o driver será fechado
-        driver.quit()
-
-# Exemplo de uso
-numero = "+5511999998888"  # Substitua pelo número da distribuidora
-mensagem = "12345678000195"
-resposta = comunicar_distribuidoras(numero, mensagem)
-print("Resultado final:", resposta)
+estrategia_teste("84573309187")
